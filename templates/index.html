@@ -25,6 +25,11 @@
             cursor: pointer;
             margin-top: 10px;
         }
+        select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
         #result {
             margin-top: 20px;
             font-weight: bold;
@@ -35,7 +40,14 @@
     <div class="container">
         <h1>Sentiment Analysis</h1>
         <form id="sentimentForm">
-            <textarea id="userInput" name="user_input" rows="4" style="width: 100%;" placeholder="Enter text here..."></textarea><br>
+            <label for="modelName">Select Model:</label>
+            <select id="modelName" name="model_name">
+                <option value="keras">RNN Model</option>
+                <option value="gnn">GNN Model</option>
+                <option value="cnn">CNN Model</option> <!-- New CNN option -->
+                <option value='nonAI'> Non AI Model</option>
+            </select><br>
+            <textarea id="userInput" name="user_input" rows="4" placeholder="Enter text here..."></textarea><br>
             <button type="submit">Predict Sentiment</button>
         </form>
         <div id="result"></div>
@@ -43,22 +55,30 @@
 
     <script>
         document.getElementById('sentimentForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const userInput = document.getElementById('userInput').value;
+            e.preventDefault(); // Prevent form submission
 
+            // Get input values
+            const userInput = document.getElementById('userInput').value;
+            const modelName = document.getElementById('modelName').value;
+
+            // Make API call to the backend
             fetch('/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: 'user_input=' + encodeURIComponent(userInput)
+                body: `user_input=${encodeURIComponent(userInput)}&model_name=${encodeURIComponent(modelName)}`
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('result').textContent = 'Predicted Sentiment: ' + data.sentiment;
+                // Display the prediction result
+                document.getElementById('result').textContent = data.sentiment
+                    ? `Predicted Sentiment: ${data.sentiment}`
+                    : `Error: ${data.error}`;
             })
             .catch(error => {
-                document.getElementById('result').textContent = 'Error: ' + error;
+                // Handle errors in API call
+                document.getElementById('result').textContent = `Error: ${error}`;
             });
         });
     </script>
